@@ -1,25 +1,3 @@
 # speech-to-do-list
 
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
-# speech-to-do-list
+![todoList메인페이지](https://raw.githubusercontent.com/cyeji/speech-to-do-list/main/readMeImage/todolist-main-page.png)

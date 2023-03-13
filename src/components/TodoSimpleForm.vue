@@ -19,7 +19,10 @@ const onSubmit = () => {
   if(todo.value === ''){
     hasError.value = true;
   }else{
-    emit('add-todo', todo.value);
+    emit('add-todo', {
+      subject : todo.value,
+      completed : false
+    });
     hasError.value = false;
     todo.value = '';
   }

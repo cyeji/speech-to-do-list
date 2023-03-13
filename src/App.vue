@@ -18,16 +18,31 @@
           <div class="text-center py-4">
             <span class="text-4xl pt-2 font-bold"> To-Do List</span>
           </div>
-          <TodoSimpleForm @add-todo="addTodo"/>
+          <div class="text-center py-4">
+            <input-text v-model="searchText" placeholder="Search" class="w-20rem mr-3 h-3rem"/>
+          </div>
 
+          <TodoSimpleForm @add-todo="addTodo"/>
+          <div >{{error}}</div>
           <div v-if="!todos.length" class="text-center text-purple-500 font-bold text-2xl mt-2">
             To-do-list를 추가해보세요.
           </div>
+          <div v-if="!filteredTodos.length && todos.length" class="text-center text-purple-500 font-bold text-2xl mt-2">
+            일치하는 일정이 없습니다.
+          </div>
           <div class="relative border-0">
             <TodoList
-                :todos="todos"
+                :todos="filteredTodos"
                 @toggle-todo="toggleTodo"
                 @delete-todo="deleteTodo"/>
+            <PaginationBar
+                :rows="limit"
+                :totalRecords="getTotalRecords"
+                @page="onPage($event)"
+                class="flex justify-content-center relative border-round bg-purple-50 inline-block"
+                style="cursor: pointer">
+
+            </PaginationBar>
           </div>
         </div>
 
@@ -37,23 +52,65 @@
   <div class="mb-5" style="height: 10px"></div>
 </template>
 <script setup>
-import {ref} from 'vue';
+import {ref, computed} from 'vue';
 import TodoSimpleForm from './components/TodoSimpleForm.vue';
 import TodoList from './components/TodoList.vue';
+import axios from 'axios';
 
 const todos = ref([]);
+const error = ref('');
+const limit = 3;
+const totalRecords = ref(1);
+const currentPage = ref(1);
 
-const addTodo = (name) => {
-  todos.value.push({
-      id: todos.value.length,
-      subject: name,
-      completed: false,
-    });
+const getTotalRecords = computed(() =>{
+  return totalRecords.value;
+});
+
+const onPage = (event) =>{
+  currentPage.value = event.page+1;
+  getTodos();
 }
 
-const toggleTodo = (index) => {
-  console.log(todos.value[index])
-  //todos.value[index].completed = !todos.value[index].completed;
+const getTodos = async (page = currentPage.value) =>{
+  error.value = '';
+  try{
+    const res = await axios.get(`http://localhost:3000/todos?_page=${page}&_limit=${limit}`);
+    totalRecords.value = res.headers['x-total-count'];
+    todos.value = res.data;
+  }catch (error){
+    console.log(error);
+    error.value = 'Something get Wrong';
+  }
+}
+
+const toggleTodo = async (index) =>{
+  error.value = '';
+  const id = todos.value[index].id;
+  try{
+    await axios.patch('http://localhost:3000/todos/'+id,{
+      completed: todos.value[index].completed
+    });
+  }catch (error){
+    console.log(error);
+    error.value = 'Something went wrong';
+  }
+}
+
+getTodos(currentPage.value);
+const addTodo = async (todo) => {
+  error.value = '';
+  try{
+    const res = await axios.post('http://localhost:3000/todos',{
+      subject: todo.subject,
+      completed: todo.completed,
+    });
+    todos.value.push(res.data);
+
+  } catch (error){
+    console.log(error);
+    error.value = 'Something went wrong';
+  }
 }
 
 const getDate = () => {
@@ -64,9 +121,27 @@ const getDate = () => {
    return year+"-"+month+"-"+day;
 }
 
-const deleteTodo = (index) =>{
-  todos.value.splice(index,1);
+const deleteTodo = async (index) =>{
+  error.value = '';
+  const id = todos.value[index].id;
+  try{
+    await axios.delete('http://localhost:3000/todos/'+id);
+    todos.value.splice(index,1);
+  }catch (err){
+    console.log(err);
+    error.value = 'Something went wrong';
+  }
 };
+
+const searchText = ref('');
+const filteredTodos = computed(() =>{
+  if(searchText.value){
+    return todos.value.filter(todo => {
+      return todo.subject.includes(searchText.value);
+    });
+  }
+  return todos.value;
+});
 </script>
 <style>
 .todoList{

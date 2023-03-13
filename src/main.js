@@ -7,7 +7,7 @@ import Image from 'primevue/image';
 import ProgressBar from 'primevue/progressbar';
 import "primeflex/primeflex.css";
 import 'primevue/resources/primevue.min.css'
-import 'primevue/resources/themes/md-light-deeppurple/theme.css'
+import 'primevue/resources/themes/lara-light-purple/theme.css'
 import Checkbox from 'primevue/checkbox';
 import Card from 'primevue/card';
 const app = createApp(App);

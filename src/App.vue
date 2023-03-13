@@ -18,23 +18,16 @@
           <div class="text-center py-4">
             <span class="text-4xl pt-2 font-bold"> To-Do List</span>
           </div>
-          <form @submit.prevent="onSubmit" class="relative text-center mb-2">
-            <input-text v-model="todo" placeholder="Type new to-do" class="w-20rem mr-3 h-3rem"></input-text>
-            <click-button label="Add" type="submit" class="h-3rem"></click-button>
-            <div v-if="hasError" class="mt-2 text-purple-500 text-100 ">
-              This file cannot be empty
-            </div>
-          </form>
+          <TodoSimpleForm @add-todo="addTodo"/>
+
+          <div v-if="!todos.length" class="text-center text-purple-500 font-bold text-2xl mt-2">
+            To-do-list를 추가해보세요.
+          </div>
           <div class="relative border-0">
-            <div v-for="todo in todos" :key="todo.id" class="bg-purple-50 mb-2">
-              <div class="flex ml-8 mr-8 h-3rem bg-white font-bold text-purple-400 border-round align-items-center  justify-content-between">
-                <div>
-                  <check-box class="form-check-input" :input-id="todo.id" name="id" :value="todo.subject" v-model="todo.completed"/>
-                  <label class="form-check-label" :for="todo.id" :class="{todo: todo.completed}">{{todo.subject}}</label>
-                </div>
-                <click-button class="flex form-check-button mr-2" label="Delete" ></click-button>
-              </div>
-            </div>
+            <TodoList
+                :todos="todos"
+                @toggle-todo="toggleTodo"
+                @delete-todo="deleteTodo"/>
           </div>
         </div>
 
@@ -45,12 +38,23 @@
 </template>
 <script setup>
 import {ref} from 'vue';
+import TodoSimpleForm from './components/TodoSimpleForm.vue';
+import TodoList from './components/TodoList.vue';
 
-const todo = ref('');
-const todos = ref([
-  {id:1,subject:'집가기'}
-]);
-const hasError = ref(false);
+const todos = ref([]);
+
+const addTodo = (name) => {
+  todos.value.push({
+      id: todos.value.length,
+      subject: name,
+      completed: false,
+    });
+}
+
+const toggleTodo = (index) => {
+  console.log(todos.value[index])
+  //todos.value[index].completed = !todos.value[index].completed;
+}
 
 const getDate = () => {
   const date = new Date();
@@ -60,21 +64,9 @@ const getDate = () => {
    return year+"-"+month+"-"+day;
 }
 
-const onSubmit = () => {
-  if(todo.value === ''){
-    hasError.value = true;
-  }else{
-    todos.value.push({
-      id: Date.now(),
-      subject: todo.value,
-      completed: false,
-    });
-    hasError.value = false;
-    todo.value = '';
-  }
+const deleteTodo = (index) =>{
+  todos.value.splice(index,1);
 };
-
-
 </script>
 <style>
 .todoList{
